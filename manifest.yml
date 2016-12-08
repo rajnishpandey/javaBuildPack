@@ -1,8 +1,8 @@
 ---
 applications:
-- name: go-webapp
+- name: Java-Buldpack
   memory: 128M
   instances: 1
-  host: simple-go-webapp
-  command: bin/simple-go-webapp
-  buildpack: go_buildpack
+  host: javaBuildPack
+  command: bin/javaBuildPack
+  buildpack: java_buildpack
