@@ -1,6 +1,6 @@
 ---
 applications:
-- name: Java-Buldpack
+- name: java-buildpack
   memory: 512M
   instances: 1
   buildpack: https://github.com/rajnishpandey/javaBuildPack
