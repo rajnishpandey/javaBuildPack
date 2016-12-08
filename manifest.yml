@@ -3,5 +3,6 @@ applications:
 - name: Java-Buldpack
   memory: 128M
   instances: 1
+  buildpack: https://github.com/rajnishpandey/javaBuildPack
   
   
