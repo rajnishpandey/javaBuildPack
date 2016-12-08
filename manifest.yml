@@ -3,6 +3,5 @@ applications:
 - name: Java-Buldpack
   memory: 128M
   instances: 1
-  host: javaBuildPack
-  command: bin/javaBuildPack
-  buildpack: java_buildpack
+  
+  
