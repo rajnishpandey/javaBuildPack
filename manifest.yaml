@@ -1,7 +1,0 @@
----
-applications:
-- name: Java-Buildpack
-  memory: 512M
-  instances: 1
-  
-  

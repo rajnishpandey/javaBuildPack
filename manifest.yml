@@ -1,0 +1,8 @@
+---
+applications:
+- name: go-webapp
+  memory: 128M
+  instances: 1
+  host: simple-go-webapp
+  command: bin/simple-go-webapp
+  buildpack: go_buildpack
