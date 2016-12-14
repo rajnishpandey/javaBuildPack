@@ -1,8 +1,8 @@
----
 applications:
 - name: java
+  host: app_hostname
+  buildpack: java_buildpack
+  instances: 2
   memory: 512M
-  instances: 1
- 
-  
-  
+  disk_quota: 512M
+  path: .
