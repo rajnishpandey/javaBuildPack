@@ -1,8 +1,118 @@
-applications:
-- name: java_buildpack
-  host: java_buildpack
-  buildpack: https://github.com/rajnishpandey/javaBuildPack
-  instances: 2
-  memory: 512M
-  disk_quota: 512M
-  path: .
+jobs:
+- name: java_buildpack_pcfdev
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - get: buildpack-github-release
+      resource: gh-release-java-buildpack
+      params:
+        globs:
+          - "*offline*"
+      trigger: true
+    - put: env-info
+      resource: local-env
+      params: {acquire: true}
+    - get: concourse-cloudfoundry-tasks
+  - task: upload-java-buildpack
+    file: concourse-cloudfoundry-tasks/ci/updatebuildpack/updatebuildpack.yml
+    params:
+      BUILDPACK_NAME: java_buildpack
+      DOWNLOADED_BUILDPACK_NAME: java-buildpack
+    on_failure:
+      put: env-info
+      resource: local-env
+      params: {release: env-info}
+
+
+
+- name: smoketest-sandbox
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - get: smoke-test
+      resource: cf-smoke-test
+    - get: gh-release-java-buildpack
+      trigger: true
+      passed: [java_buildpack_pcfdev]
+    - get: env-info
+      resource: local-env
+    - get: concourse-cloudfoundry-tasks
+  - task: smoke-test
+    file: concourse-cloudfoundry-tasks/ci/smoketest/smoketest.yml
+    on_failure:
+      put: env-info
+      resource: local-env
+      params: {release: env-info}
+
+
+- name: acceptance-sandbox
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - get: acceptance-tests
+      resource: cf-acceptance-tests
+    - get: gh-release-java-buildpack
+      trigger: true
+      passed: [smoketest-sandbox]
+    - get: env-info
+      resource: local-env
+    - get: concourse-cloudfoundry-tasks 
+  - task: acceptance-tests
+    file: concourse-cloudfoundry-tasks/ci/acceptancetests/acceptancetests.yml
+    ensure:
+      put: env-info
+      resource: local-env
+      params: {release: env-info}
+
+
+
+
+resources:
+- name: local-env
+  type: pool
+  source:
+    uri: git@github.com:shinji62/pool-concourse-config.git
+    branch: master
+    pool: local
+    private_key: {{private-key-github-concourse}}
+
+
+- name: gh-release-java-buildpack
+  type: github-release
+  source:
+    user: cloudfoundry
+    repository: java-buildpack
+    access_token: {{github-access-token}}
+
+
+
+#Cloudfoundry /smoke test
+- name: cf-smoke-test
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/cf-smoke-tests.git
+    branch: master
+    private_key: {{private-key-github-concourse}}
+
+
+
+#Cloudfoundry / Acceptance test
+- name: cf-acceptance-tests
+  type: git
+  source:
+    uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
+    branch: master
+    private_key: {{private-key-github-concourse}}
+
+
+#Common script repository
+- name: concourse-cloudfoundry-tasks
+  type: git
+  source:
+    uri: git@github.com:shinji62/concourse-cloudfoundry-tasks.git
+    branch: master
+    private_key: {{private-key-github-concourse}}
+
